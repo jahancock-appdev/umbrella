@@ -33,12 +33,8 @@ puts "Your coordinates are #{parsed_response["latitude"]}, #{parsed_response["lo
 
 current = parsed_response["currently"]
 current_temp = current["temperature"]
-current_prec = current["precipProbability"]
-if current_prec > 0.1
-  current_cond = "Raining"
-else
-  current_cond = "Clear"
-end
+current_cond = current["summary"]
+
 puts "It is currently #{current_temp}°F."
 puts "Next hour: #{current_cond}"
 
