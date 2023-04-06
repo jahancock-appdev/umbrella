@@ -1,3 +1,4 @@
+require "ascii_charts"
 require "open-uri"
 require "json"
 
@@ -18,8 +19,8 @@ first_result = resuls_array[0]
 geo = first_result["geometry"]
 loc = geo["location"]
 
-p latitude = loc["lat"]
-p longitude = loc["lng"]
+latitude = loc["lat"]
+longitude = loc["lng"]
 
 
 pirate_url = "https://api.pirateweather.net/forecast/#{ENV.fetch("PIRATE_WEATHER_KEY")}/#{latitude},#{longitude}"
@@ -41,20 +42,26 @@ end
 puts "It is currently #{current_temp}°F."
 puts "Next hour: #{current_cond}"
 
-hourly = parsed_response["hourly"]["data"]
+hourly = parsed_response["hourly"]["data"][1..12]
 rain_dummy = 0
-12.times do |hour|
-  hour_weather = hourly[hour]
-  pct_rain = hour_weather["precipProbability"]
-    if pct_rain > 0.1
-      puts "In #{hour} hours, there is a #{(pct_rain*100).round}% chance of precipitation."
+
+hourly_prec = Array.new
+
+hourly.each do |weather|
+  weather_time = Time.at(weather["time"])
+  weather_rain = weather["precipProbability"]
+  seconds_from_now = weather_time - Time.now
+  hours_from_now = (seconds_from_now / 60 / 60).round
+  hourly_prec.push([hours_from_now, (weather_rain*100).round])
+    if weather_rain > 0.1
+      puts "In #{hours_from_now} hours, there is a #{(weather_rain*100).round}% chance of precipitation."
       rain_dummy = rain_dummy + 1
     end
 end
 
+puts AsciiCharts::Cartesian.new(hourly_prec, :bar => true, :hide_zero => true).draw
+
+
 if rain_dummy > 0
   puts "You might want to take an umbrella!"
 end
-
-
-# Time.at(1680793020)
